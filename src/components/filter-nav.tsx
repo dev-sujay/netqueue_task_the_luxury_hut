@@ -1,8 +1,8 @@
-import type * as React from "react"
-import { ChevronDown, ChevronRight, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { FilterSidebar } from "./filter-sidebar"
+import React, { useState } from "react";
+import { ChevronDown, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { FilterSidebar } from "./filter-sidebar";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -10,23 +10,220 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+} from "@/components/ui/navigation-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function FilterNav({
   filters,
   setFilters,
 }: {
-  filters: Record<string, string>
-  setFilters: React.Dispatch<React.SetStateAction<Record<string, string>>>
+  filters: Record<string, string>;
+  setFilters: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }) {
-  const brands = ["Rolex", "Breitling", "Orient", "Casio", "Seiko", "Tissot", "Hublot"]
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
 
-  const jewelleryBrands = ["Cartier", "Tiffany & Co.", "Van Cleef & Arpels"]
-  const conditions = ["New", "Pre-owned", "Vintage"]
-  const items = ["Watches", "Rings", "Necklaces"]
-  const genders = ["Men", "Women", "Unisex"]
-  const priceRanges = ["Under £5,000", "£5,000 - £10,000", "Over £10,000"]
+  const brands = [
+    "Rolex",
+    "Breitling",
+    "Orient",
+    "Casio",
+    "Seiko",
+    "Tissot",
+    "Hublot",
+  ];
+  const jewelleryBrands = ["Cartier", "Tiffany & Co.", "Van Cleef & Arpels"];
+  const conditions = ["New", "Pre-owned", "Vintage"];
+  const items = ["Watches", "Rings", "Necklaces"];
+  const genders = ["Men", "Women", "Unisex"];
+  const suggestedPrices = [
+    { label: "Under £5,000", min: 0, max: 5000 },
+    { label: "£5,000 - £10,000", min: 5000, max: 10000 },
+    { label: "£10,000 - £20,000", min: 10000, max: 20000 },
+    { label: "Over £20,000", min: 20000, max: 50000 },
+  ];
+
+  const handlePriceChange = (type: "min" | "max", value: number) => {
+    const newValue = Math.max(0, Math.min(value, 50000));
+    setPriceRange((prev) => ({
+      ...prev,
+      [type]:
+        type === "min"
+          ? Math.min(newValue, prev.max - 1000)
+          : Math.max(newValue, prev.min + 1000),
+    }));
+    
+  };
+
+  const handlePriceFilter = () => {
+    setFilters((prev) => ({
+      ...prev,
+      minPrice: priceRange.min.toString(),
+      maxPrice: priceRange.max.toString(),
+    }));
+  };
+
+  const getLeftPercentage = () => (priceRange.min / 50000) * 100;
+  const getRightPercentage = () => ((50000 - priceRange.max) / 50000) * 100;
+
+  // Process filters for display
+  const displayedFilters = [];
+  const { minPrice, maxPrice, sortBy, sortOrder, ...otherFilters } = filters;
+
+  // Price Filter
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    const min = minPrice || "0";
+    const max = maxPrice || "50000";
+    displayedFilters.push({
+      key: "price",
+      label: `Price: £${parseFloat(min).toLocaleString()} - £${parseFloat(
+        max
+      ).toLocaleString()}`,
+      onRemove: () => {
+        const newFilters = { ...otherFilters };
+        if (sortBy !== undefined) newFilters.sortBy = sortBy;
+        if (sortOrder !== undefined) newFilters.sortOrder = sortOrder;
+        setFilters(newFilters);
+        setPriceRange({ min: 0, max: 50000 });
+      },
+    });
+  }
+
+  // Sort Filter
+  if (sortBy && sortOrder) {
+    let sortLabel = "";
+    switch (sortBy) {
+      case "regularPrice":
+        sortLabel = `Sorted by Price: ${
+          sortOrder === "asc" ? "Low to High" : "High to Low"
+        }`;
+        break;
+      case "createdAt":
+        sortLabel = "Sorted by Newest First";
+        break;
+      default:
+        sortLabel = `Sorted by ${sortBy} (${sortOrder})`;
+    }
+    displayedFilters.push({
+      key: "sort",
+      label: sortLabel,
+      onRemove: () => {
+        const newFilters = { ...otherFilters };
+        if (minPrice !== undefined) newFilters.minPrice = minPrice;
+        if (maxPrice !== undefined) newFilters.maxPrice = maxPrice;
+        delete newFilters.sortBy;
+        delete newFilters.sortOrder;
+        setFilters(newFilters);
+      },
+    });
+  }
+
+  // Other Filters
+  Object.entries(otherFilters).forEach(([key, value]) => {
+    displayedFilters.push({
+      key,
+      label: `${key}: ${value}`,
+      onRemove: () => {
+        const newFilters = { ...filters };
+        delete newFilters[key];
+        setFilters(newFilters);
+      },
+    });
+  });
+
+  const CustomPriceContent = () => (
+    <div className="p-4 w-[400px] md:w-[500px] lg:w-[800px]">
+      <div className="space-y-4">
+        {/* Price Range Slider */}
+        <div className="relative pt-6">
+          <div className="h-2 bg-gray-200 rounded">
+            <div
+              className="absolute h-2 bg-blue-500 rounded"
+              style={{
+                left: `${getLeftPercentage()}%`,
+                right: `${getRightPercentage()}%`,
+              }}
+            />
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={50000}
+            value={priceRange.min}
+            onChange={(e) => handlePriceChange("min", Number(e.target.value))}
+            className="absolute w-full h-2 appearance-none pointer-events-none opacity-0"
+            color="black"
+          />
+          <input
+            type="range"
+            min={0}
+            max={50000}
+            value={priceRange.max}
+            onChange={(e) => handlePriceChange("max", Number(e.target.value))}
+            className="absolute w-full h-2 appearance-none pointer-events-none opacity-0"
+            color="black"
+          />
+        </div>
+
+        {/* Price Inputs */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className="text-sm text-gray-600">Min Price</label>
+            <div className="relative">
+              <span className="absolute left-3 top-2 text-gray-500">£</span>
+              <input
+                type="number"
+                value={priceRange.min}
+                onChange={(e) =>
+                  handlePriceChange("min", Number(e.target.value))
+                }
+                className="w-full pl-7 pr-3 py-1 border rounded"
+              />
+            </div>
+          </div>
+          <div className="flex-1">
+            <label className="text-sm text-gray-600">Max Price</label>
+            <div className="relative">
+              <span className="absolute left-3 top-2 text-gray-500">£</span>
+              <input
+                type="number"
+                value={priceRange.max}
+                onChange={(e) =>
+                  handlePriceChange("max", Number(e.target.value))
+                }
+                className="w-full pl-7 pr-3 py-1 border rounded"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Selection Buttons */}
+        <div className="grid grid-cols-2 gap-2">
+          {suggestedPrices.map((range) => (
+            <Button
+              key={range.label}
+              variant="outline"
+              className="text-[13px] font-questrial"
+              onClick={() => {
+                setPriceRange({ min: range.min, max: range.max });
+                handlePriceFilter();
+              }}
+            >
+              {range.label}
+            </Button>
+          ))}
+        </div>
+
+        <Button className="w-full font-questrial" onClick={handlePriceFilter}>
+          Apply Price Filter
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <section>
@@ -44,9 +241,39 @@ export function FilterNav({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem className="text-[15px] font-questrial">Price: Low to High</DropdownMenuItem>
-                <DropdownMenuItem className="text-[15px] font-questrial">Price: High to Low</DropdownMenuItem>
-                <DropdownMenuItem className="text-[15px] font-questrial">Newest First</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      sortBy: "regularPrice",
+                      sortOrder: "asc",
+                    }))
+                  }
+                >
+                  Price: Low to High
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      sortBy: "regularPrice",
+                      sortOrder: "desc",
+                    }))
+                  }
+                >
+                  Price: High to Low
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      sortBy: "createdAt",
+                      sortOrder: "desc",
+                    }))
+                  }
+                >
+                  Newest First
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -58,13 +285,20 @@ export function FilterNav({
                     WATCH BRANDS
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-50">
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[800px]">
                       {brands.map((brand) => (
                         <li key={brand}>
                           <NavigationMenuLink asChild>
-                            <div className="flex gap-1 items-center select-none space-y-1 rounded-md p-3  no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                              <span className="block  text-sm font-medium leading-none">{brand}</span>
-                              <ChevronRight className="h-3 w-3" />
+                            <div
+                              className="..."
+                              onClick={() =>
+                                setFilters((prev) => ({
+                                  ...prev,
+                                  watchBrand: brand,
+                                }))
+                              }
+                            >
+                              {brand}
                             </div>
                           </NavigationMenuLink>
                         </li>
@@ -77,13 +311,20 @@ export function FilterNav({
                     JEWELLERY BRANDS
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-50">
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[800px]">
                       {jewelleryBrands.map((brand) => (
                         <li key={brand}>
                           <NavigationMenuLink asChild>
-                            <div className="flex gap-1 items-center select-none space-y-1 rounded-md p-3  no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                              <span className="block  text-sm font-medium leading-none">{brand}</span>
-                              <ChevronRight className="h-3 w-3" />
+                            <div
+                              className="..."
+                              onClick={() =>
+                                setFilters((prev) => ({
+                                  ...prev,
+                                  jewelryBrand: brand,
+                                }))
+                              }
+                            >
+                              {brand}
                             </div>
                           </NavigationMenuLink>
                         </li>
@@ -96,13 +337,20 @@ export function FilterNav({
                     CONDITION
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-50">
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[800px]">
                       {conditions.map((condition) => (
                         <li key={condition}>
                           <NavigationMenuLink asChild>
-                            <div className="flex gap-1 items-center select-none space-y-1 rounded-md p-3  no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                              <span className="block  text-sm font-medium leading-none">{condition}</span>
-                              <ChevronRight className="h-3 w-3" />
+                            <div
+                              className="..."
+                              onClick={() =>
+                                setFilters((prev) => ({
+                                  ...prev,
+                                  condition: condition,
+                                }))
+                              }
+                            >
+                              {condition}
                             </div>
                           </NavigationMenuLink>
                         </li>
@@ -111,15 +359,24 @@ export function FilterNav({
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-[15px] font-questrial font-light">ITEMS</NavigationMenuTrigger>
+                  <NavigationMenuTrigger className="text-[15px] font-questrial font-light">
+                    ITEMS
+                  </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-50">
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[800px]">
                       {items.map((item) => (
                         <li key={item}>
                           <NavigationMenuLink asChild>
-                            <div className="flex gap-1 items-center select-none space-y-1 rounded-md p-3  no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                              <span className="block  text-sm font-medium leading-none">{item}</span>
-                              <ChevronRight className="h-3 w-3" />
+                            <div
+                              className="..."
+                              onClick={() =>
+                                setFilters((prev) => ({
+                                  ...prev,
+                                  category: item,
+                                }))
+                              }
+                            >
+                              {item}
                             </div>
                           </NavigationMenuLink>
                         </li>
@@ -132,13 +389,20 @@ export function FilterNav({
                     GENDER
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-50">
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[800px]">
                       {genders.map((gender) => (
                         <li key={gender}>
                           <NavigationMenuLink asChild>
-                            <div className="flex gap-1 items-center select-none space-y-1 rounded-md p-3  no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                              <span className="block  text-sm font-medium leading-none">{gender}</span>
-                              <ChevronRight className="h-3 w-3" />
+                            <div
+                              className="..."
+                              onClick={() =>
+                                setFilters((prev) => ({
+                                  ...prev,
+                                  gender: gender,
+                                }))
+                              }
+                            >
+                              {gender}
                             </div>
                           </NavigationMenuLink>
                         </li>
@@ -151,18 +415,7 @@ export function FilterNav({
                     FILTER BY PRICE
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-50">
-                      {priceRanges.map((priceRange) => (
-                        <li key={priceRange}>
-                          <NavigationMenuLink asChild>
-                            <div className="flex gap-1 items-center select-none space-y-1 rounded-md p-3  no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                              <span className="block  text-sm font-medium leading-none">{priceRange}</span>
-                              <ChevronRight className="h-3 w-3" />
-                            </div>
-                          </NavigationMenuLink>
-                        </li>
-                      ))}
-                    </ul>
+                    <CustomPriceContent />
                   </NavigationMenuContent>
                 </NavigationMenuItem>
               </NavigationMenuList>
@@ -175,37 +428,45 @@ export function FilterNav({
 
         <div className="border-b py-2">
           <div className="flex flex-wrap items-center gap-2 justify-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-[12px] font-questrial"
-              onClick={() => setFilters({})}
-            >
-              CLEAR
-            </Button>
-            {Object.keys(filters)?.map((filter) => (
-              <Badge key={filter} variant="secondary" className="flex items-center gap-1 text-[12px] font-questrial">
-                {filter}
+            {displayedFilters.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-[12px] font-questrial"
+                onClick={() => {
+                  setFilters({});
+                  setPriceRange({ min: 0, max: 50000 });
+                }}
+              >
+                CLEAR
+              </Button>
+            )}
+            {displayedFilters.map((filter) => (
+              <Badge
+                key={filter.key}
+                variant="secondary"
+                className="flex items-center gap-1 text-[12px] font-questrial"
+              >
+                {filter.label}
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-3 w-3 p-0 hover:bg-transparent"
-                  onClick={() => {
-                    const temp = { ...filters }
-                    delete temp[filter]
-                    setFilters(temp)
-                  }}
+                  onClick={filter.onRemove}
                 >
                   <X className="h-2 w-2" />
-                  <span className="sr-only">Remove {filter} filter</span>
+                  <span className="sr-only">Remove {filter.key} filter</span>
                 </Button>
               </Badge>
             ))}
           </div>
-          <p className="text-[12px] text-muted-foreground font-questrial">1-40 OF 249 RESULTS</p>
+          <p className="text-[12px] text-muted-foreground font-questrial">
+            1-40 OF 249 RESULTS
+          </p>
         </div>
       </div>
     </section>
-  )
+  );
 }
 
+export default FilterNav;

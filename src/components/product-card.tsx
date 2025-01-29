@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import CartContext from "@/context/CartContext";
 
 export function ProductCard(props: Product) {
@@ -24,6 +24,7 @@ export function ProductCard(props: Product) {
   } = props;
 
   const { addToCart } = useContext(CartContext) || {addToCart: () => {}};
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
   const handleAddToCart = () => {
     console.log("Adding to cart:", props);
@@ -61,9 +62,13 @@ export function ProductCard(props: Product) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-full bg-white/80 hover:bg-white"
+            className="rounded-full bg-white/80 hover:bg-white"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsWishlisted(!isWishlisted);
+            }}
           >
-            <Heart className="h-4 w-4" />
+            <Heart size={24} color={isWishlisted ? "red" : "black"} fill={isWishlisted ? "red" : "none"} />
             <span className="sr-only">Add to wishlist</span>
           </Button>
         </div>
