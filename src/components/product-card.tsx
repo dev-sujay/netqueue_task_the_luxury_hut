@@ -1,49 +1,84 @@
-import { Link } from "react-router-dom"
-import { Heart, Search, ShoppingBag } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Link } from "react-router-dom";
+import { Heart, Search, ShoppingBag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import type { Product } from "@/types/Product";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
+import { useContext } from "react";
+import CartContext from "@/context/CartContext";
 
-interface ProductCardProps {
-  id: string
-  name: string
-  image: string
-  price: number
-  originalPrice: number
-  inStock: boolean
-  discount?: number
-}
+export function ProductCard(props: Product) {
+  const {
+    _id,
+    name,
+    inStock,
+    salePrice,
+    regularPrice,
+    images,
+    shortDescription,
+  } = props;
 
-export function ProductCard({ id, name, image, price, originalPrice, inStock, discount }: ProductCardProps) {
+  const { addToCart } = useContext(CartContext) || {addToCart: () => {}};
+
+  const handleAddToCart = () => {
+    console.log("Adding to cart:", props);
+    addToCart(props)
+  }
+
+  const discount =
+    salePrice && regularPrice
+      ? Math.round((1 - salePrice / regularPrice) * 100)
+      : null;
+
   return (
-    <div className="group relative flex flex-col" onClick={() => console.log(id)}>
+    <div
+      className="group relative flex flex-col"
+      onClick={() => console.log(_id)}
+    >
       <div className="relative aspect-square overflow-hidden">
         <div className="absolute left-4 right-4 top-4 z-10 flex justify-between">
           <div className="flex gap-2">
-            {inStock && (
-              <Badge variant="secondary" className="h-7 text-[0.625rem] font-questrial">
-                IN STOCK
-              </Badge>
-            )}
-            {discount && (
-              <Badge variant="destructive" className="h-7 text-[0.625rem] font-questrial">
+            <Badge
+              variant="secondary"
+              className="h-7 text-[0.625rem] font-questrial"
+            >
+              {inStock ? "IN STOCK" : "OUT OF STOCK"}
+            </Badge>
+            {discount && discount > 0 && (
+              <Badge
+                variant="destructive"
+                className="h-7 text-[0.625rem] font-questrial"
+              >
                 -{discount}%
               </Badge>
             )}
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-white/80 hover:bg-white">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full bg-white/80 hover:bg-white"
+          >
             <Heart className="h-4 w-4" />
             <span className="sr-only">Add to wishlist</span>
           </Button>
         </div>
         <img
-          src={image || "/placeholder.svg"}
+          src={images[0] || "/placeholder.svg"}
           alt={name}
           className="object-cover transition-transform group-hover:scale-105 w-full h-full"
         />
         <div className="absolute inset-x-0 bottom-0">
           <div className="translate-y-full group-hover:translate-y-0 transition-transform duration-300">
             <div className="grid grid-cols-2">
-              <Button className="rounded-none bg-black text-white hover:bg-black/90 h-12 text-[0.6875rem] font-questrial">
+              <Button
+                className="rounded-none bg-black text-white hover:bg-black/90 h-12 text-[0.6875rem] font-questrial"
+                onClick={handleAddToCart}
+              >
                 <ShoppingBag className="h-5 w-5 mr-2" />
                 ADD TO CART
               </Button>
@@ -59,15 +94,30 @@ export function ProductCard({ id, name, image, price, originalPrice, inStock, di
         </div>
       </div>
       <div className="space-y-3 text-center py-3">
-        <span className="text-[0.6875rem] text-muted-foreground tracking-wider font-questrial">PRE-OWNED</span>
-        <h3 className="text-xs tracking-wider font-questrial truncate">{name}</h3>
+        <p className="text-[0.6875rem] text-muted-foreground tracking-wider font-questrial">
+          {shortDescription}
+        </p>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <h3 className="text-sm font-questrial">
+                {name?.length > 25 ? name.slice(0, 25) + "..." : name}
+              </h3>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-sm font-questrial w-[200px]">{name}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <div className="flex items-center justify-center gap-4">
-          {originalPrice > price && (
+          {salePrice && salePrice < regularPrice && (
             <span className="text-md text-muted-foreground line-through font-questrial">
-              £{originalPrice.toLocaleString()}
+              £{regularPrice.toLocaleString()}
             </span>
           )}
-          <span className="text-md font-questrial">£{price.toLocaleString()}</span>
+          <span className="text-md font-questrial">
+            £{(salePrice || regularPrice).toLocaleString()}
+          </span>
         </div>
         <Link
           to="#"
@@ -77,6 +127,5 @@ export function ProductCard({ id, name, image, price, originalPrice, inStock, di
         </Link>
       </div>
     </div>
-  )
+  );
 }
-

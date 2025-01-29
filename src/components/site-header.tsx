@@ -1,10 +1,17 @@
+import { useContext, useState } from "react"
 import { Link } from "react-router-dom"
 import { Search, User2, Heart, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
 import { MobileNav } from "./mobile-nav"
+import { CartSidebar } from "./CartSidebar"
+import CartContext from "@/context/CartContext"
 
 export function SiteHeader() {
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const {totalItems} = useContext(CartContext) || { totalItems: 0 }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
@@ -57,12 +64,26 @@ export function SiteHeader() {
             <Heart className="h-5 w-5" />
             <span className="sr-only">Wishlist</span>
           </Button>
-          <Button variant="ghost" size="icon" className="hover:bg-transparent">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hover:bg-transparent relative"
+            onClick={() => setIsCartOpen(true)}
+          >
             <ShoppingBag className="h-5 w-5" />
+            {totalItems > 0 && (
+              <Badge
+                variant="destructive"
+                className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              >
+                {totalItems}
+              </Badge>
+            )}
             <span className="sr-only">Cart</span>
           </Button>
         </div>
       </div>
+      <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </header>
   )
 }

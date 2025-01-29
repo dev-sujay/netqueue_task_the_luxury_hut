@@ -1,57 +1,10 @@
 import { ProductCard } from "@/components/product-card";
-import {useState, useEffect} from "react";
+import { useProducts } from "@/hooks/useProducts";
+import { useState, useEffect } from "react";
 
-
-const products = [
-  {
-    id: "1",
-    name: "ROLEX SUBMARINER HULK 40MM GREEN DIAL",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-nwCGbDkpga7pSjd3mbVWUv3IOSvy25.png",
-    price: 20000,
-    originalPrice: 25000,
-    inStock: true,
-    discount: 33,
-  },
-  {
-    id: "2",
-    name: "ROLEX SUBMARINER HULK 40MM GREEN DIAL",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-nwCGbDkpga7pSjd3mbVWUv3IOSvy25.png",
-    price: 20000,
-    originalPrice: 25000,
-    inStock: true,
-    discount: 33,
-  },
-  {
-    id: "3",
-    name: "ROLEX SUBMARINER HULK 40MM GREEN DIAL",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-nwCGbDkpga7pSjd3mbVWUv3IOSvy25.png",
-    price: 20000,
-    originalPrice: 25000,
-    inStock: true,
-    discount: 33,
-  },
-  {
-    id: "4",
-    name: "ROLEX SUBMARINER HULK 40MM GREEN DIAL",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-nwCGbDkpga7pSjd3mbVWUv3IOSvy25.png",
-    price: 20000,
-    originalPrice: 25000,
-    inStock: true,
-    discount: 33,
-  },
-  {
-    id: "5",
-    name: "ROLEX SUBMARINER HULK 40MM GREEN DIAL",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-nwCGbDkpga7pSjd3mbVWUv3IOSvy25.png",
-    price: 20000,
-    originalPrice: 25000,
-    inStock: true,
-    discount: 33,
-  },
-]
-
-export function ProductGrid() {
+export function ProductGrid({ filters }: { filters: Record<string, string> }) {
   const [noOfColumns, setNoOfColumns] = useState(4); // Default for large screens
+  const { products, loading, error } = useProducts(filters);
 
   useEffect(() => {
     const updateColumns = () => {
@@ -71,23 +24,29 @@ export function ProductGrid() {
       window.removeEventListener("resize", updateColumns); // Cleanup listener
     };
   }, []);
+
+  if (loading) return <p>Loading products...</p>;
+  if (error) return <p>Error: {error}</p>;
+
   return (
     <div className="container px-8 py-2">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {products.map((product, index) => {
-          const isLastRow = Math.floor(index / noOfColumns) === Math.floor((products.length - 1) / noOfColumns);
+          const isLastRow =
+            Math.floor(index / noOfColumns) ===
+            Math.floor((products.length - 1) / noOfColumns);
           const isFirstInRow = index % noOfColumns === 0;
           const isLastInRow = (index + 1) % noOfColumns === 0;
 
           return (
             <div
-              key={product.id}
+              key={product._id}
               className={[
                 "border-gray-300", // Common border color
                 !isLastRow && "border-b", // Bottom border for all but the last row
                 isFirstInRow && "border-r", // Right border for the first item in a row
                 !isFirstInRow && !isLastInRow && "border-r", // Left & right borders for middle items
-                noOfColumns === 1 && 'border-r-0'
+                noOfColumns === 1 && "border-r-0",
               ]
                 .filter(Boolean)
                 .join(" ")}
@@ -103,6 +62,5 @@ export function ProductGrid() {
         </button>
       </div>
     </div>
-  )
+  );
 }
-
