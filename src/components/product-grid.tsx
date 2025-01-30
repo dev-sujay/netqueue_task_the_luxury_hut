@@ -1,10 +1,21 @@
 import { ProductCard } from "@/components/product-card";
-import { useProducts } from "@/hooks/useProducts";
-import { useState, useEffect } from "react";
+import ProductsContext from "@/context/ProductsContext";
+import { useState, useEffect, useContext } from "react";
 
-export function ProductGrid({ filters }: { filters: Record<string, string> }) {
+export function ProductGrid() {
   const [noOfColumns, setNoOfColumns] = useState(4); // Default for large screens
-  const { products, loading, error } = useProducts(filters);
+  const { products, loading, setPageNum, pageNum, total } =
+    useContext(ProductsContext);
+
+  const loadMore = () => {
+    try {
+      if (pageNum < Math.ceil(total / 10)) {
+        setPageNum(pageNum + 1);
+      }
+    } catch (error) {
+      console.error("Error loading more products:", error);
+    }
+  };
 
   useEffect(() => {
     const updateColumns = () => {
@@ -24,9 +35,6 @@ export function ProductGrid({ filters }: { filters: Record<string, string> }) {
       window.removeEventListener("resize", updateColumns); // Cleanup listener
     };
   }, []);
-
-  if (loading) return <p>Loading products...</p>;
-  if (error) return <p>Error: {error}</p>;
 
   return (
     <div className="container px-8 py-2">
@@ -51,16 +59,22 @@ export function ProductGrid({ filters }: { filters: Record<string, string> }) {
                 .filter(Boolean)
                 .join(" ")}
             >
-              <ProductCard {...product} />
+              <ProductCard product={product} loading={loading} />
             </div>
           );
         })}
       </div>
-      <div className="flex justify-center mt-12">
-        <button className="px-16 py-3 border border-black/80 text-sm tracking-wider hover:bg-black/5 transition-colors">
-          LOAD MORE
-        </button>
-      </div>
+      {total > products?.length && (
+        <div className="flex justify-center mt-12">
+          <button
+            className="px-16 py-3 border border-black/80 text-sm tracking-wider hover:bg-black/5 transition-colors"
+            onClick={loadMore}
+            disabled={loading}
+          >
+            LOAD MORE
+          </button>
+        </div>
+      )}
     </div>
   );
 }

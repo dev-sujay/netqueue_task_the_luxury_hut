@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useContext, useState } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,15 +17,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ProductsContext from "@/context/ProductsContext";
 
-export function FilterNav({
-  filters,
-  setFilters,
-}: {
-  filters: Record<string, string>;
-  setFilters: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-}) {
+export function FilterNav() {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
+  const {total, products, loading, filters, setFilters} = useContext(ProductsContext);
 
   const brands = [
     "Rolex",
@@ -80,8 +76,8 @@ export function FilterNav({
     const max = maxPrice || "50000";
     displayedFilters.push({
       key: "price",
-      label: `Price: £${parseFloat(min).toLocaleString()} - £${parseFloat(
-        max
+      label: `Price: £${parseFloat(min as string).toLocaleString()} - £${parseFloat(
+        max as string
       ).toLocaleString()}`,
       onRemove: () => {
         const newFilters = { ...otherFilters };
@@ -224,6 +220,7 @@ export function FilterNav({
       </div>
     </div>
   );
+
 
   return (
     <section>
@@ -460,9 +457,14 @@ export function FilterNav({
               </Badge>
             ))}
           </div>
-          <p className="text-[12px] text-muted-foreground font-questrial">
-            1-40 OF 249 RESULTS
+          {
+            loading ?
+            <p className="text-[12px] text-muted-foreground font-questrial"></p>
+            :
+            <p className="text-[12px] text-muted-foreground font-questrial">
+            {products?.length} OF {total} RESULTS
           </p>
+          }
         </div>
       </div>
     </section>

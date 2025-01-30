@@ -12,7 +12,13 @@ import {
 import { useContext, useState } from "react";
 import CartContext from "@/context/CartContext";
 
-export function ProductCard(props: Product) {
+export function ProductCard({
+  product,
+  loading,
+}: {
+  product: Product;
+  loading: boolean;
+}) {
   const {
     _id,
     name,
@@ -21,15 +27,15 @@ export function ProductCard(props: Product) {
     regularPrice,
     images,
     shortDescription,
-  } = props;
+  } = product;
 
-  const { addToCart } = useContext(CartContext) || {addToCart: () => {}};
+  const { addToCart } = useContext(CartContext) || { addToCart: () => {} };
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const handleAddToCart = () => {
-    console.log("Adding to cart:", props);
-    addToCart(props)
-  }
+    console.log("Adding to cart:", product);
+    addToCart(product);
+  };
 
   const discount =
     salePrice && regularPrice
@@ -68,15 +74,23 @@ export function ProductCard(props: Product) {
               setIsWishlisted(!isWishlisted);
             }}
           >
-            <Heart size={24} color={isWishlisted ? "red" : "black"} fill={isWishlisted ? "red" : "none"} />
+            <Heart
+              size={24}
+              color={isWishlisted ? "red" : "black"}
+              fill={isWishlisted ? "red" : "none"}
+            />
             <span className="sr-only">Add to wishlist</span>
           </Button>
         </div>
-        <img
-          src={images[0] || "/placeholder.svg"}
-          alt={name}
-          className="object-cover transition-transform group-hover:scale-105 w-full h-full"
-        />
+        {loading ? (
+          <div className="bg-gray-200 animate-pulse w-full h-full"></div>
+        ) : (
+          <img
+            src={images[0] || "/placeholder.svg"}
+            alt={name}
+            className="object-cover transition-transform group-hover:scale-105 w-full h-full"
+          />
+        )}
         <div className="absolute inset-x-0 bottom-0">
           <div className="translate-y-full group-hover:translate-y-0 transition-transform duration-300">
             <div className="grid grid-cols-2">
