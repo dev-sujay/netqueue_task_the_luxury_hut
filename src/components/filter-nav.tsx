@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FilterSidebar } from "./filter-sidebar";
@@ -285,7 +285,7 @@ export function FilterNav() {
                         <li key={brand}>
                           <NavigationMenuLink asChild>
                             <div
-                              className="..."
+                              className="flex items-center cursor-pointer"
                               onClick={() =>
                                 setFilters((prev) => ({
                                   ...prev,
@@ -294,6 +294,7 @@ export function FilterNav() {
                               }
                             >
                               {brand}
+                              <ChevronRight className="h-4 w-4" />
                             </div>
                           </NavigationMenuLink>
                         </li>
@@ -311,7 +312,7 @@ export function FilterNav() {
                         <li key={brand}>
                           <NavigationMenuLink asChild>
                             <div
-                              className="..."
+                              className="flex items-center cursor-pointer"
                               onClick={() =>
                                 setFilters((prev) => ({
                                   ...prev,
@@ -320,6 +321,7 @@ export function FilterNav() {
                               }
                             >
                               {brand}
+                              <ChevronRight className="h-4 w-4" />
                             </div>
                           </NavigationMenuLink>
                         </li>
@@ -337,7 +339,7 @@ export function FilterNav() {
                         <li key={condition}>
                           <NavigationMenuLink asChild>
                             <div
-                              className="..."
+                              className="flex items-center cursor-pointer"
                               onClick={() =>
                                 setFilters((prev) => ({
                                   ...prev,
@@ -346,6 +348,7 @@ export function FilterNav() {
                               }
                             >
                               {condition}
+                              <ChevronRight className="h-4 w-4" />
                             </div>
                           </NavigationMenuLink>
                         </li>
@@ -363,7 +366,7 @@ export function FilterNav() {
                         <li key={item}>
                           <NavigationMenuLink asChild>
                             <div
-                              className="..."
+                              className="flex items-center cursor-pointer"
                               onClick={() =>
                                 setFilters((prev) => ({
                                   ...prev,
@@ -372,6 +375,7 @@ export function FilterNav() {
                               }
                             >
                               {item}
+                              <ChevronRight className="h-4 w-4" />
                             </div>
                           </NavigationMenuLink>
                         </li>
@@ -389,7 +393,7 @@ export function FilterNav() {
                         <li key={gender}>
                           <NavigationMenuLink asChild>
                             <div
-                              className="..."
+                              className="flex items-center cursor-pointer"
                               onClick={() =>
                                 setFilters((prev) => ({
                                   ...prev,
@@ -398,6 +402,7 @@ export function FilterNav() {
                               }
                             >
                               {gender}
+                              <ChevronRight className="h-4 w-4" />
                             </div>
                           </NavigationMenuLink>
                         </li>
