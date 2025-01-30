@@ -27,11 +27,11 @@ A sophisticated e-commerce platform built with modern web technologies, featurin
 ### Installation
 1. Clone the repository:
 ```bash
-git clone https://github.com/dev-sujay/netqueue_task_backend
+git clone https://github.com/dev-sujay/netqueue_task_the_luxury_hut.git
 ```
 2. Install dependencies:
 ```bash
-cd netqueue_task_backend && npm install
+cd netqueue_task_the_luxury_hut && npm install
 ```
 3. Start the development server:
 ```bash
