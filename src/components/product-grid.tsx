@@ -1,6 +1,8 @@
 import { ProductCard } from "@/components/product-card";
 import ProductsContext from "@/context/ProductsContext";
 import { useState, useEffect, useContext } from "react";
+import { Button } from "./ui/button";
+import { RefreshCcw } from "lucide-react";
 
 export function ProductGrid() {
   const [noOfColumns, setNoOfColumns] = useState(4); // Default for large screens
@@ -35,6 +37,33 @@ export function ProductGrid() {
       window.removeEventListener("resize", updateColumns); // Cleanup listener
     };
   }, []);
+
+  if (!products?.length) {
+    if (loading) {
+      return (
+        <div className="container px-8 py-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            {[...Array(4)].map((_, index) => (
+              <div key={index}>
+                <div className="bg-gray-200 animate-pulse h-72"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }else{
+      return (
+        <div className="container px-8 py-2">
+          {/* no data found */}
+          <div className="bg-gray-200 h-72 flex items-center justify-center">
+            <Button onClick={() => {window.location.reload()}} >
+              <RefreshCcw className="mr-2 h-4 w-4" /> No data found , click to reload
+            </Button>
+          </div>
+        </div>
+      )
+    }
+  }
 
   return (
     <div className="container px-8 py-2">
