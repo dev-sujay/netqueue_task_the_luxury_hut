@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Heart, Search, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ export function ProductCard({
 
   const { addToCart } = useContext(CartContext) || { addToCart: () => {} };
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const navigate = useNavigate();
 
   const handleAddToCart = () => {
     console.log("Adding to cart:", product);
@@ -45,7 +46,7 @@ export function ProductCard({
   return (
     <div
       className="group relative flex flex-col"
-      onClick={() => console.log(_id)}
+      onClick={() => navigate(`/product/${_id}`)}
     >
       <div className="relative aspect-square overflow-hidden">
         <div className="absolute left-4 right-4 top-4 z-10 flex justify-between">

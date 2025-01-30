@@ -21,7 +21,8 @@ import ProductsContext from "@/context/ProductsContext";
 
 export function FilterNav() {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
-  const {total, products, loading, filters, setFilters} = useContext(ProductsContext);
+  const { total, products, loading, filters, setFilters } =
+    useContext(ProductsContext);
 
   const brands = [
     "Rolex",
@@ -52,7 +53,6 @@ export function FilterNav() {
           ? Math.min(newValue, prev.max - 1000)
           : Math.max(newValue, prev.min + 1000),
     }));
-    
   };
 
   const handlePriceFilter = () => {
@@ -76,9 +76,9 @@ export function FilterNav() {
     const max = maxPrice || "50000";
     displayedFilters.push({
       key: "price",
-      label: `Price: £${parseFloat(min as string).toLocaleString()} - £${parseFloat(
-        max as string
-      ).toLocaleString()}`,
+      label: `Price: £${parseFloat(
+        min as string
+      ).toLocaleString()} - £${parseFloat(max as string).toLocaleString()}`,
       onRemove: () => {
         const newFilters = { ...otherFilters };
         if (sortBy !== undefined) newFilters.sortBy = sortBy;
@@ -206,7 +206,6 @@ export function FilterNav() {
               className="text-[13px] font-questrial"
               onClick={() => {
                 setPriceRange({ min: range.min, max: range.max });
-                handlePriceFilter();
               }}
             >
               {range.label}
@@ -221,11 +220,10 @@ export function FilterNav() {
     </div>
   );
 
-
   return (
     <section>
       <div className="container">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center divide-x border-b border-t py-4">
+        <div className="flex flex-col md:grid md:grid-cols-[1fr_auto_1fr] items-center divide-y md:divide-y-0 md:divide-x border-b border-t py-4">
           <div className="justify-self-start">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -274,9 +272,9 @@ export function FilterNav() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="flex justify-center space-x-2 relative z-20">
+          <div className="flex flex-wrap justify-center space-x-2 relative z-20">
             <NavigationMenu>
-              <NavigationMenuList>
+              <NavigationMenuList className="flex flex-wrap justify-center gap-4 md:gap-2">
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-[15px] font-questrial font-light">
                     WATCH BRANDS
@@ -423,7 +421,7 @@ export function FilterNav() {
           </div>
         </div>
 
-        <div className="border-b py-2">
+        <div className="border-b py-2 flex flex-col justify-center items-center">
           <div className="flex flex-wrap items-center gap-2 justify-center">
             {displayedFilters.length > 0 && (
               <Button
@@ -457,14 +455,13 @@ export function FilterNav() {
               </Badge>
             ))}
           </div>
-          {
-            loading ?
+          {loading ? (
             <p className="text-[12px] text-muted-foreground font-questrial"></p>
-            :
-            <p className="text-[12px] text-muted-foreground font-questrial">
-            {products?.length} OF {total} RESULTS
-          </p>
-          }
+          ) : (
+            <p className="text-[12px] text-muted-foreground font-questrial mt-3">
+              {products?.length} OF {total} RESULTS
+            </p>
+          )}
         </div>
       </div>
     </section>

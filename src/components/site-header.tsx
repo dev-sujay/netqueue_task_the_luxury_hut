@@ -7,10 +7,12 @@ import { Badge } from "@/components/ui/badge"
 import { MobileNav } from "./mobile-nav"
 import { CartSidebar } from "./CartSidebar"
 import CartContext from "@/context/CartContext"
+import { FloatingSearchBar } from "./FloatingSearchBar"
 
 export function SiteHeader() {
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const {totalItems} = useContext(CartContext) || { totalItems: 0 }
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const { totalItems } = useContext(CartContext) || { totalItems: 0 }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
@@ -52,7 +54,7 @@ export function SiteHeader() {
           </Link>
         </nav>
         <div className="flex items-center justify-end space-x-2 md:space-x-4">
-          <Button variant="ghost" size="icon" className="hover:bg-transparent">
+          <Button variant="ghost" size="icon" className="hover:bg-transparent" onClick={() => setIsSearchOpen(true)}>
             <Search className="h-5 w-5" />
             <span className="sr-only">Search</span>
           </Button>
@@ -84,6 +86,7 @@ export function SiteHeader() {
         </div>
       </div>
       <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <FloatingSearchBar isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   )
 }
