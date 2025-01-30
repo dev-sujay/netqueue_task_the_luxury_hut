@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, ArrowLeftRight, Calendar, Clock, ZoomIn } from "lucide-react";
 import {
   Carousel,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
@@ -18,50 +19,54 @@ import { getProductAPI } from "@/api/productApi";
 
 export default function ProductDetails() {
   const [currentImageIndex, setCurrentImageIndex] = React.useState<number>(0);
-  const carouselApi = React.useRef<any>(null);
+  const carouselApi = React.useRef<CarouselApi | null>(null);
   const [product, setProduct] = React.useState<Product | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
   const navigate = useNavigate();
   const params = useParams();
-  const { addToCart } = React.useContext(CartContext) || { addToCart: () => {} };
+  const { addToCart } = React.useContext(CartContext) || {
+    addToCart: () => {},
+  };
 
+  function convertToHTML(htmlString: string) {
+    try {
+      // Step 1: Replace escaped newlines with actual newlines
+      let cleanedText = htmlString.replace(/\\r\\n|\\n/g, "\n");
 
-  function convertToHTML(htmlString : string) {
-   try {
-     // Step 1: Replace escaped newlines with actual newlines
-     let cleanedText = htmlString.replace(/\\r\\n|\\n/g, '\n'); 
+      // Step 2: Remove unnecessary inline styles from <span>
+      cleanedText = cleanedText
+        .replace(/<span style="[^"]*">/g, "")
+        .replace(/<\/span>/g, "");
 
-     // Step 2: Remove unnecessary inline styles from <span>
-     cleanedText = cleanedText.replace(/<span style="[^"]*">/g, '').replace(/<\/span>/g, '');
- 
-     // Step 3: Preserve lists by temporarily replacing <ul> and <li> with placeholders
-     cleanedText = cleanedText.replace(/<ul>/g, '[[UL]]')
-                              .replace(/<\/ul>/g, '[[/UL]]')
-                              .replace(/<li [^>]*>/g, '[[LI]]')
-                              .replace(/<\/li>/g, '[[/LI]]');
- 
-     // Step 4: Convert double newlines to paragraphs
-     cleanedText = cleanedText.replace(/\n\n/g, '</p><p>');
- 
-     // Step 5: Convert single newlines to line breaks (but not inside lists)
-     cleanedText = cleanedText.replace(/\n/g, '<br>');
- 
-     // Step 6: Wrap content in a paragraph
-     cleanedText = `<p>${cleanedText}</p>`;
- 
-     // Step 7: Restore lists
-     cleanedText = cleanedText.replace(/\[\[UL\]\]/g, '<ul class="styled-list">')
-                              .replace(/\[\[\/UL\]\]/g, '</ul>')
-                              .replace(/\[\[LI\]\]/g, '<li>')
-                              .replace(/\[\[\/LI\]\]/g, '</li>');
- 
- 
-     return cleanedText;
-   } catch (error) {
-     console.error('Error converting HTML:', error);
-     return "";
-   }
-}
+      // Step 3: Preserve lists by temporarily replacing <ul> and <li> with placeholders
+      cleanedText = cleanedText
+        .replace(/<ul>/g, "[[UL]]")
+        .replace(/<\/ul>/g, "[[/UL]]")
+        .replace(/<li [^>]*>/g, "[[LI]]")
+        .replace(/<\/li>/g, "[[/LI]]");
+
+      // Step 4: Convert double newlines to paragraphs
+      cleanedText = cleanedText.replace(/\n\n/g, "</p><p>");
+
+      // Step 5: Convert single newlines to line breaks (but not inside lists)
+      cleanedText = cleanedText.replace(/\n/g, "<br>");
+
+      // Step 6: Wrap content in a paragraph
+      cleanedText = `<p>${cleanedText}</p>`;
+
+      // Step 7: Restore lists
+      cleanedText = cleanedText
+        .replace(/\[\[UL\]\]/g, '<ul class="styled-list">')
+        .replace(/\[\[\/UL\]\]/g, "</ul>")
+        .replace(/\[\[LI\]\]/g, "<li>")
+        .replace(/\[\[\/LI\]\]/g, "</li>");
+
+      return cleanedText;
+    } catch (error) {
+      console.error("Error converting HTML:", error);
+      return "";
+    }
+  }
 
   React.useEffect(() => {
     const getProduct = async (id: string) => {
@@ -83,6 +88,22 @@ export default function ProductDetails() {
     getProduct(params?.id as string);
   }, [params.id]);
 
+  // Handle carousel slide changes
+  React.useEffect(() => {
+    const api = carouselApi.current;
+    if (!api) return;
+
+    const handleSlideChange = () => {
+      setCurrentImageIndex(api.selectedScrollSnap());
+    };
+
+    api.on("select", handleSlideChange);
+    return () => {
+      api.off("select", handleSlideChange);
+    };
+  }, []);
+
+  // Scroll to current image when index changes
   React.useEffect(() => {
     if (carouselApi.current) {
       carouselApi.current.scrollTo(currentImageIndex);
@@ -97,11 +118,9 @@ export default function ProductDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left side - Image carousel */}
           <div className="relative space-y-4">
-            <Carousel
+          <Carousel
               setApi={(api) => (carouselApi.current = api)}
               className="w-full"
-              currentIndex={currentImageIndex}
-              onSelect={(index) => setCurrentImageIndex(index)}
             >
               <CarouselContent>
                 {product?.images.map((image, index) => (
@@ -111,9 +130,6 @@ export default function ProductDetails() {
                         variant="ghost"
                         size="icon"
                         className="absolute right-2 top-2 z-10 bg-black/50 hover:bg-black/70"
-                        onClick={() => {
-                          /* Implement zoom functionality */
-                        }}
                       >
                         <ZoomIn className="h-5 w-5 text-white" />
                       </Button>
@@ -203,7 +219,7 @@ export default function ProductDetails() {
                 className="w-full text-lg py-6"
                 size="lg"
                 disabled={!product?.inStock}
-                onClick={() => addToCart((product as Product), 1)}
+                onClick={() => addToCart(product as Product, 1)}
               >
                 ADD TO CART
               </Button>
