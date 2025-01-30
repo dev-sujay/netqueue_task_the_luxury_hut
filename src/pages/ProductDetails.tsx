@@ -113,12 +113,19 @@ export default function ProductDetails() {
   return (
     <div className="container mx-auto p-6">
       {loading ? (
-        <div>Loading...</div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="flex justify-center items-center">
+            <div className="animate-pulse h-80 w-full bg-gray-200"></div>
+          </div>
+          <div className="flex justify-center items-center">
+            <div className="animate-pulse  h-80 w-full bg-gray-200"></div>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left side - Image carousel */}
           <div className="relative space-y-4">
-          <Carousel
+            <Carousel
               setApi={(api) => (carouselApi.current = api)}
               className="w-full"
             >
