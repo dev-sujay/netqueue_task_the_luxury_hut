@@ -13,6 +13,8 @@ import {
 import { Product } from "@/types/Product";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import CartContext from "@/context/CartContext";
+import { getProductAPI } from "@/api/productApi";
 
 export default function ProductDetails() {
   const [currentImageIndex, setCurrentImageIndex] = React.useState<number>(0);
@@ -21,6 +23,8 @@ export default function ProductDetails() {
   const [loading, setLoading] = React.useState<boolean>(true);
   const navigate = useNavigate();
   const params = useParams();
+  const { addToCart } = React.useContext(CartContext) || { addToCart: () => {} };
+
 
   function convertToHTML(htmlString : string) {
    try {
@@ -63,9 +67,7 @@ export default function ProductDetails() {
     const getProduct = async (id: string) => {
       try {
         setLoading(true);
-        const data = await fetch(
-          "http://localhost:3000/api/products/" + id
-        ).then((res) => res.json());
+        const data = await getProductAPI(id);
         setProduct({
           ...data,
           description: convertToHTML(data.description),
@@ -201,6 +203,7 @@ export default function ProductDetails() {
                 className="w-full text-lg py-6"
                 size="lg"
                 disabled={!product?.inStock}
+                onClick={() => addToCart((product as Product), 1)}
               >
                 ADD TO CART
               </Button>

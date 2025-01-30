@@ -7,6 +7,7 @@ import Header from "./components/header-up";
 import ProductsProvider from "./context/ProductsProvider";
 import ProductDetails from "./pages/ProductDetails";
 import { Toaster } from "react-hot-toast";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/product/:id" element={<ProductDetails />} />
+            <Route path="*" element={<NotFound />} /> {/* Catch-all route */}
             {/* Add more routes as needed */}
           </Routes>
         </main>
